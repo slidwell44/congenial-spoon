@@ -26,7 +26,7 @@ class LogLevels(PeopleManagementEnum):
 
 
 def configure_logging():
-    log_level = str(LOG_LEVEL).upper()  # cast to string
+    log_level = str(LOG_LEVEL).upper()
     log_levels = list(LogLevels)
 
     if log_level not in log_levels:
