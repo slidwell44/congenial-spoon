@@ -1,6 +1,7 @@
 from uuid import UUID
 
 from asyncpg import Connection  # type: ignore
+from black.rusty import Result
 from fastapi import status
 from fastapi.exceptions import HTTPException
 
@@ -57,4 +58,9 @@ class UserService:
         return response
 
     async def delete_user(self, conn: Connection, user_id: str) -> None:
-        await self.repository.delete_user(conn=conn, user_id=user_id)
+        result: str = await self.repository.delete_user(conn=conn, user_id=user_id)
+        if result != "DELETE 1":
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"User with uid: {user_id} not found",
+            )

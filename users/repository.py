@@ -2,7 +2,7 @@ import json
 from uuid import UUID
 
 from asyncpg import Connection  # type: ignore
-from asyncpg.protocol.protocol import Record
+from asyncpg.protocol.protocol import Record  # type: ignore
 
 from users.models import UserResponse, CreateUserRequest
 
@@ -74,10 +74,11 @@ class UserRepository:
         return [UserResponse.model_validate(dict(r)) for r in result]
 
     @staticmethod
-    async def delete_user(conn: Connection, user_id: str) -> None:
-        _ = await conn.execute(
+    async def delete_user(conn: Connection, user_id: str) -> str:
+        result = await conn.execute(
             """
             DELETE FROM people.users WHERE uid = $1
             """,
             user_id,
         )
+        return result

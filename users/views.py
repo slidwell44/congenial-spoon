@@ -126,6 +126,12 @@ async def update_user(
     path="/{user_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Delete a user by id",
+    responses={
+        status.HTTP_204_NO_CONTENT: {
+            "description": "User deleted",
+        },
+        status.HTTP_404_NOT_FOUND: {"description": "User not found"},
+    },
 )
 async def delete_user(
     service: t.Annotated[UserService, Depends(get_user_service)],
