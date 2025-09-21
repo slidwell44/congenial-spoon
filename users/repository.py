@@ -57,7 +57,8 @@ class UserRepository:
         conn: Connection,
         data: list[CreateUserRequest],
     ) -> list[UserResponse]:
-        result = await conn.execute(
+        payload: str = json.dumps([d.model_dump() for d in data])
+        result: list[Record] = await conn.fetch(
             """
                 WITH payload AS (
                     SELECT * FROM jsonb_to_recordset($1::jsonb)
@@ -66,19 +67,17 @@ class UserRepository:
                 INSERT INTO people.users (id, first_name, last_name, email)
                 SELECT id, first_name, last_name, email
                 FROM payload
-                RETURNING uid, id, first_name, last_name, email, created_at
+                RETURNING uid, id, first_name, last_name, email, created_at;
                 """,
-            json.dumps([d.model_dump() for d in data]),
+            payload,
         )
-
-        return [UserResponse.model_validate(r) for r in result]
+        return [UserResponse.model_validate(dict(r)) for r in result]
 
     @staticmethod
     async def delete_user(conn: Connection, user_id: str) -> None:
-        result = await conn.execute(
+        _ = await conn.execute(
             """
             DELETE FROM people.users WHERE uid = $1
             """,
             user_id,
         )
-        print(result)

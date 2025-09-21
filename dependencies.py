@@ -1,4 +1,5 @@
 import typing as t
+from os.path import defpath
 
 from asyncpg import Connection
 from fastapi import Depends
@@ -15,6 +16,11 @@ from users.service import UserService
 
 async def get_database_connection() -> t.AsyncIterator[Connection]:
     async with people_management_db.connection() as conn:
+        yield conn
+
+
+async def get_database_transaction() -> t.AsyncIterator[Connection]:
+    async with people_management_db.transaction() as conn:
         yield conn
 
 

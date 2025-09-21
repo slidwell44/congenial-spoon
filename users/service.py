@@ -51,14 +51,10 @@ class UserService:
     async def create_users(
         self, conn: Connection, data: list[CreateUserRequest]
     ) -> list[UserResponse]:
-        conn.transaction().start()
         response: list[UserResponse] = await self.repository.create_users(
             conn=conn, data=data
         )
-        conn.transaction().commit()
         return response
 
     async def delete_user(self, conn: Connection, user_id: str) -> None:
-        conn.transaction().start()
         await self.repository.delete_user(conn=conn, user_id=user_id)
-        conn.transaction().commit()

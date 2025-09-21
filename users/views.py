@@ -5,7 +5,11 @@ from asyncpg import Connection  # type: ignore
 from fastapi import APIRouter, Depends, Body, status, Path, Query
 from fastapi.exceptions import HTTPException
 
-from dependencies import get_database_connection, get_user_service
+from dependencies import (
+    get_database_connection,
+    get_user_service,
+    get_database_transaction,
+)
 from users.models import CreateUserRequest, UserResponse
 from users.service import UserService
 
@@ -84,23 +88,25 @@ async def get_user_by_id(
         status.HTTP_201_CREATED: {
             "model": list[UserResponse],
             "description": "Creates users from the list of CreateUserRequests",
-        }
+        },
+        status.HTTP_400_BAD_REQUEST: {
+            "description": "Cannot create more than 50 users at once"
+        },
     },
 )
 async def create_users(
     service: t.Annotated[UserService, Depends(get_user_service)],
-    conn: t.Annotated[Connection, Depends(get_database_connection)],
+    conn: t.Annotated[Connection, Depends(get_database_transaction)],
     data: list[CreateUserRequest] = Body(..., title="List of users to create"),
 ) -> list[UserResponse]:
     """
     Create up to 50 users at a time
     """
-    if isinstance(data, list):
-        if len(data) > 50:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Cannot create more than 50 users at once",
-            )
+    if len(data) > 50:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot create more than 50 users at once",
+        )
     return await service.create_users(conn=conn, data=data)
 
 
@@ -123,7 +129,7 @@ async def update_user(
 )
 async def delete_user(
     service: t.Annotated[UserService, Depends(get_user_service)],
-    conn: t.Annotated[Connection, Depends(get_database_connection)],
+    conn: t.Annotated[Connection, Depends(get_database_transaction)],
     user_id: str = Path(..., title="User id to delete"),
 ) -> None:
     """

@@ -18,7 +18,7 @@ class PeopleManagementDatabase:
 
     async def startup(self):
         # noinspection PyUnusedLocal
-        async def _init(init_con: Connection):
+        async def _init(init_con: Connection) -> None:
             await init_con.execute("SET TIME ZONE 'UTC'")
 
         self._pool = await create_pool(
@@ -30,6 +30,7 @@ class PeopleManagementDatabase:
             min_size=settings.database.min_pool_size,
             max_size=settings.database.max_pool_size,
             command_timeout=settings.database.command_timeout,
+            init=_init,
         )
         async with self.connection() as con:
             await con.fetchval("SELECT 1")
@@ -41,20 +42,25 @@ class PeopleManagementDatabase:
 
     @asynccontextmanager
     async def connection(self) -> t.AsyncIterator[Connection]:
-        """
-        I am not a big fan of committing transactions in the context manager, but
-        this is a placeholder until I put in some kind of uow manager
-        """
-        con = await self._pool.acquire()
+        con = await self.pool.acquire()
         try:
-            con.transaction().start()
             yield con
-            con.transaction().commit()
+        finally:
+            await self.pool.release(con)
+
+    @asynccontextmanager
+    async def transaction(self) -> t.AsyncIterator[Connection]:
+        con = await self.pool.acquire()
+        tr = con.transaction()
+        await tr.start()
+        try:
+            yield con
+            await tr.commit()
         except Exception:
-            con.transaction().rollback()
+            await tr.rollback()
             raise
         finally:
-            await self._pool.release(con)
+            await self.pool.release(con)
 
 
 people_management_db = PeopleManagementDatabase()
