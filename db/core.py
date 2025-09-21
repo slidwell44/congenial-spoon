@@ -48,6 +48,6 @@ class PeopleManagementDatabase:
             await self._pool.release(con)
 
 
-service = PeopleManagementDatabase()
+people_management_db = PeopleManagementDatabase()
 
-__all__ = ["service"]
+__all__ = ["people_management_db"]
