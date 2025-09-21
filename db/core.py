@@ -1,14 +1,14 @@
 import typing as t
 from contextlib import asynccontextmanager
 
-from asyncpg import Pool, create_pool, Connection
+from asyncpg import Pool, create_pool, Connection  # type: ignore
 
 from config import settings
 
 
 class PeopleManagementDatabase:
     def __init__(self):
-        self._pool: t.Optional[Pool] = None
+        self._pool: Pool | None = None
 
     @property
     def pool(self) -> Pool:
@@ -41,9 +41,18 @@ class PeopleManagementDatabase:
 
     @asynccontextmanager
     async def connection(self) -> t.AsyncIterator[Connection]:
+        """
+        I am not a big fan of committing transactions in the context manager, but
+        this is a placeholder until I put in some kind of uow manager
+        """
         con = await self._pool.acquire()
         try:
+            con.transaction().start()
             yield con
+            con.transaction().commit()
+        except Exception:
+            con.transaction().rollback()
+            raise
         finally:
             await self._pool.release(con)
 
