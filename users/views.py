@@ -1,0 +1,103 @@
+import typing as t
+from uuid import UUID
+
+from asyncpg import Connection  # type: ignore
+from fastapi import APIRouter, Depends, Body, status, Path, Query
+from fastapi.exceptions import HTTPException
+
+from dependencies import get_database_connection, get_user_service
+from users.models import CreateUserRequest, UserResponse
+from users.service import UserService
+
+router = APIRouter()
+
+
+@router.get("/")
+async def get_users(
+    service: t.Annotated[UserService, Depends(get_user_service)],
+    conn: t.Annotated[Connection, Depends(get_database_connection)],
+    user_id: str = Query(alias="userId"),
+) -> list[UserResponse]:
+    """
+    Retrieve all users
+    """
+    return await service.get_users(conn=conn, user_id=user_id)
+
+
+@router.get(
+    path="/{uid}",
+    status_code=status.HTTP_200_OK,
+    summary="Get user by uid",
+    responses={
+        status.HTTP_200_OK: {
+            "model": UserResponse,
+            "description": "Gets a user from the db by uid",
+        }
+    },
+)
+async def get_user_by_id(
+    service: t.Annotated[UserService, Depends(get_user_service)],
+    conn: t.Annotated[Connection, Depends(get_database_connection)],
+    uid: UUID = Path(..., title="User id to retrieve"),
+) -> UserResponse:
+    """
+    Retrieve a user by id
+    """
+    return await service.get_user_by_id(conn=conn, uid=uid)
+
+
+@router.post(
+    path="/",
+    response_model=list[UserResponse],
+    status_code=status.HTTP_201_CREATED,
+    summary="Create users",
+    responses={
+        status.HTTP_201_CREATED: {
+            "model": list[UserResponse],
+            "description": "Creates users from the list of CreateUserRequests",
+        }
+    },
+)
+async def create_users(
+    service: t.Annotated[UserService, Depends(get_user_service)],
+    conn: t.Annotated[Connection, Depends(get_database_connection)],
+    data: list[CreateUserRequest] = Body(..., title="List of users to create"),
+) -> list[UserResponse]:
+    """
+    Create up to 50 users at a time
+    """
+    if isinstance(data, list):
+        if len(data) > 50:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Cannot create more than 50 users at once",
+            )
+    return await service.create_users(conn=conn, data=data)
+
+
+@router.patch("/{user_id}")
+async def update_user(
+    user_id: str,
+    service: t.Annotated[UserService, Depends(get_user_service)],
+    conn: t.Annotated[Connection, Depends(get_database_connection)],
+):
+    """
+    Update a user
+    """
+    raise NotImplementedError()
+
+
+@router.delete(
+    path="/{user_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete a user by id",
+)
+async def delete_user(
+    service: t.Annotated[UserService, Depends(get_user_service)],
+    conn: t.Annotated[Connection, Depends(get_database_connection)],
+    user_id: str = Path(..., title="User id to delete"),
+) -> None:
+    """
+    Delete a user by id
+    """
+    await service.delete_user(conn=conn, user_id=user_id)

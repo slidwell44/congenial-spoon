@@ -1,16 +1,40 @@
+from __future__ import annotations
+
 import typing as t
-from datetime import datetime, UTC
+from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, Field, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic.alias_generators import to_camel
 
 
-class User(BaseModel):
-    uid: t.Annotated[UUID, Field(title="Unique Id")]
-    id: t.Annotated[str, Field(title="User Id")]
-    first_name: t.Annotated[str, Field(title="First Name")]
-    last_name: t.Annotated[str, Field(title="Last Name")]
-    email: t.Annotated[EmailStr, Field(title="Email")]
-    created_at: t.Annotated[
-        datetime, Field(default_factory=datetime.now(UTC), title="Created At")
-    ]
+class UserBase(BaseModel):
+    id: str = Field(min_length=3, max_length=64, examples=["sl3789"])
+    first_name: str = Field(min_length=1, max_length=100, examples=["Simon"])
+    last_name: str = Field(min_length=1, max_length=100, examples=["Lidwell"])
+    email: EmailStr = Field(examples=["slidwell@example.com"])
+
+    model_config = ConfigDict(
+        extra="forbid", alias_generator=to_camel, populate_by_name=True
+    )
+
+
+class CreateUserRequest(UserBase):
+    pass
+
+
+class UpdateUserRequest(BaseModel):
+    uid: UUID
+    id: t.Optional[str] = Field(default=None, min_length=3, max_length=64)
+    first_name: t.Optional[str] = Field(default=None, min_length=1, max_length=100)
+    last_name: t.Optional[str] = Field(default=None, min_length=1, max_length=100)
+    email: t.Optional[EmailStr] = None
+
+    model_config = ConfigDict(
+        extra="forbid", alias_generator=to_camel, populate_by_name=True
+    )
+
+
+class UserResponse(UserBase):
+    uid: UUID
+    created_at: datetime
