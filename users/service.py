@@ -12,9 +12,23 @@ class UserService:
     def __init__(self, repository: UserRepository):
         self.repository = repository
 
-    async def get_users(self, conn: Connection, user_id: str) -> list[UserResponse]:
+    async def get_users(
+        self,
+        conn: Connection,
+        *,
+        user_id: str | None,
+        first_name: str | None,
+        last_name: str | None,
+        limit: int = 10,
+        offset: int = 0,
+    ) -> list[UserResponse]:
         users: list[UserResponse] | None = await self.repository.get_users(
-            conn=conn, user_id=user_id
+            conn=conn,
+            user_id=user_id,
+            first_name=first_name,
+            last_name=last_name,
+            limit=limit,
+            offset=offset,
         )
         if not users:
             raise HTTPException(

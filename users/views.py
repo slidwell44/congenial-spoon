@@ -12,16 +12,44 @@ from users.service import UserService
 router = APIRouter()
 
 
-@router.get("/")
+@router.get(
+    path="/",
+    status_code=status.HTTP_200_OK,
+    summary="Get users by query params",
+    responses={
+        status.HTTP_200_OK: {
+            "model": list[UserResponse],
+            "description": "Gets a user from the db by uid",
+        },
+        status.HTTP_404_NOT_FOUND: {"description": "Users not found"},
+    },
+)
 async def get_users(
     service: t.Annotated[UserService, Depends(get_user_service)],
     conn: t.Annotated[Connection, Depends(get_database_connection)],
-    user_id: str = Query(alias="userId"),
+    user_id: t.Optional[str] = Query(
+        default=None, alias="userId", examples=["sl3789", "sl", "789"]
+    ),
+    first_name: t.Optional[str] = Query(
+        default=None, alias="firstName", examples=["simon", "si", "mon"]
+    ),
+    last_name: t.Optional[str] = Query(
+        default=None, alias="lastName", examples=["lidwell", "li", "ell"]
+    ),
+    limit: int = 10,
+    offset: int = 0,
 ) -> list[UserResponse]:
     """
-    Retrieve all users
+    Get users by query params
     """
-    return await service.get_users(conn=conn, user_id=user_id)
+    return await service.get_users(
+        conn=conn,
+        user_id=user_id,
+        first_name=first_name,
+        last_name=last_name,
+        limit=limit,
+        offset=offset,
+    )
 
 
 @router.get(
@@ -32,7 +60,8 @@ async def get_users(
         status.HTTP_200_OK: {
             "model": UserResponse,
             "description": "Gets a user from the db by uid",
-        }
+        },
+        status.HTTP_404_NOT_FOUND: {"description": "Users not found"},
     },
 )
 async def get_user_by_id(

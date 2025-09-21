@@ -2,6 +2,7 @@ import json
 from uuid import UUID
 
 from asyncpg import Connection  # type: ignore
+from asyncpg.protocol.protocol import Record
 
 from users.models import UserResponse, CreateUserRequest
 
@@ -11,22 +12,38 @@ class UserRepository:
         pass
 
     @staticmethod
-    async def get_users(conn: Connection, user_id: str) -> list[UserResponse] | None:
-        result = await conn.fetchrow(
+    async def get_users(
+        conn: Connection,
+        *,
+        user_id: str | None,
+        first_name: str | None,
+        last_name: str | None,
+        limit: int = 10,
+        offset: int = 0,
+    ) -> list[UserResponse] | None:
+        result: list[Record] = await conn.fetch(
             """
             SELECT uid, id, first_name, last_name, email, created_at
-            FROM people.users WHERE id = $1
+            FROM people.users
+            WHERE ($1::text IS NULL OR id ILIKE '%' || $1 || '%')
+              AND ($2::text IS NULL OR first_name ILIKE '%' || $2 || '%')
+              AND ($3::text IS NULL OR last_name  ILIKE '%' || $3 || '%')
+            ORDER BY created_at DESC
+            LIMIT $4 OFFSET $5
             """,
             user_id,
+            first_name,
+            last_name,
+            limit,
+            offset,
         )
         if not result:
             return None
-        # TODO 9/21/2025: Handle query params that return multiple results
-        return [UserResponse.model_validate(dict(result))]
+        return [UserResponse.model_validate(dict(r)) for r in result]
 
     @staticmethod
     async def get_user_by_id(conn: Connection, uid: UUID) -> UserResponse | None:
-        result = await conn.fetchrow(
+        result: Record = await conn.fetchrow(
             """
             SELECT uid, id, first_name, last_name, email, created_at
             FROM people.users WHERE uid = $1
