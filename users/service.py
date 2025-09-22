@@ -5,7 +5,7 @@ from black.rusty import Result
 from fastapi import status
 from fastapi.exceptions import HTTPException
 
-from users.models import CreateUserRequest, UserResponse
+from users.models import CreateUserRequest, UserResponse, UpdateUserRequest
 from users.repository import UserRepository
 
 
@@ -57,10 +57,23 @@ class UserService:
         )
         return response
 
-    async def delete_user(self, conn: Connection, user_id: str) -> None:
-        result: str = await self.repository.delete_user(conn=conn, user_id=user_id)
+    async def update_user(
+        self, conn: Connection, data: UpdateUserRequest
+    ) -> UserResponse:
+        user: UserResponse | None = await self.repository.update_user(
+            conn=conn, data=data
+        )
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"User with uid: {data.uid} not found",
+            )
+        return user
+
+    async def delete_user(self, conn: Connection, uid: UUID) -> None:
+        result: str = await self.repository.delete_user(conn=conn, uid=uid)
         if result != "DELETE 1":
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"User with uid: {user_id} not found",
+                detail=f"User with uid: {uid} not found",
             )

@@ -10,7 +10,7 @@ from dependencies import (
     get_user_service,
     get_database_transaction,
 )
-from users.models import CreateUserRequest, UserResponse
+from users.models import CreateUserRequest, UserResponse, UpdateUserRequest
 from users.service import UserService
 
 router = APIRouter()
@@ -110,22 +110,33 @@ async def create_users(
     return await service.create_users(conn=conn, data=data)
 
 
-@router.patch("/{user_id}")
+@router.patch(
+    path="/",
+    status_code=status.HTTP_202_ACCEPTED,
+    responses={
+        status.HTTP_202_ACCEPTED: {
+            "model": UserResponse,
+            "description": "User updated",
+        },
+        status.HTTP_404_NOT_FOUND: {"description": "User not found"},
+    },
+)
 async def update_user(
-    user_id: str,
     service: t.Annotated[UserService, Depends(get_user_service)],
-    conn: t.Annotated[Connection, Depends(get_database_connection)],
-):
+    conn: t.Annotated[Connection, Depends(get_database_transaction)],
+    data: UpdateUserRequest = Body(...),
+) -> UserResponse:
     """
     Update a user
     """
-    raise NotImplementedError()
+    user: UserResponse = await service.update_user(conn=conn, data=data)
+    return user
 
 
 @router.delete(
-    path="/{user_id}",
+    path="/{uid}",
     status_code=status.HTTP_204_NO_CONTENT,
-    summary="Delete a user by id",
+    summary="Delete a user by uid",
     responses={
         status.HTTP_204_NO_CONTENT: {
             "description": "User deleted",
@@ -136,9 +147,9 @@ async def update_user(
 async def delete_user(
     service: t.Annotated[UserService, Depends(get_user_service)],
     conn: t.Annotated[Connection, Depends(get_database_transaction)],
-    user_id: str = Path(..., title="User id to delete"),
+    uid: str = Path(..., title="User id to delete"),
 ) -> None:
     """
-    Delete a user by id
+    Delete a user by uid
     """
-    await service.delete_user(conn=conn, user_id=user_id)
+    await service.delete_user(conn=conn, uid=uid)
