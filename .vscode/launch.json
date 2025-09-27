@@ -9,7 +9,9 @@
       "type": "debugpy",
       "request": "launch",
       "module": "uvicorn",
-      "args": ["main:app", "--reload"],
+      "args": ["person_tool.main:app", "--reload"],
+      "cwd": "${workspaceFolder}/src/api",
+      "python": "${workspaceFolder}/src/api/.venv/Scripts/python.exe",
       "jinja": true
     }
   ]
