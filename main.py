@@ -11,7 +11,7 @@ from system.views import router as system_router
 configure_logging()
 
 
-app = FastAPI(
+app: FastAPI = FastAPI(
     title=settings.app.name,
     version=settings.app.version,
     lifespan=lifespan,

@@ -4,7 +4,7 @@ import typing as t
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field  # type: ignore
 from pydantic.alias_generators import to_camel
 
 

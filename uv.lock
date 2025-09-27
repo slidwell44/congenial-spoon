@@ -270,6 +270,15 @@ wheels = [
 ]
 
 [[package]]
+name = "iniconfig"
+version = "2.1.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/f2/97/ebf4da567aa6827c909642694d71c9fcf53e5b504f2d96afea02718862f3/iniconfig-2.1.0.tar.gz", hash = "sha256:3abbd2e30b36733fee78f9c7f7308f2d0050e88f0087fd25c2645f63c773e1c7", size = 4793, upload-time = "2025-03-19T20:09:59.721Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/2c/e1/e6716421ea10d38022b952c159d5161ca1193197fb744506875fbb87ea7b/iniconfig-2.1.0-py3-none-any.whl", hash = "sha256:9deba5723312380e77435581c6bf4935c94cbfab9b1ed33ef8d238ea168eb760", size = 6050, upload-time = "2025-03-19T20:10:01.071Z" },
+]
+
+[[package]]
 name = "jinja2"
 version = "3.1.6"
 source = { registry = "https://pypi.org/simple" }
@@ -394,6 +403,8 @@ dependencies = [
     { name = "mypy" },
     { name = "pydantic", extra = ["email"] },
     { name = "pydantic-settings" },
+    { name = "pyrefly" },
+    { name = "pytest" },
     { name = "sqlalchemy" },
     { name = "tool" },
     { name = "uv" },
@@ -407,6 +418,8 @@ requires-dist = [
     { name = "mypy", specifier = ">=1.18.2" },
     { name = "pydantic", extras = ["email"], specifier = ">=2.11.9" },
     { name = "pydantic-settings", specifier = ">=2.10.1" },
+    { name = "pyrefly", specifier = ">=0.34.0" },
+    { name = "pytest", specifier = ">=8.4.2" },
     { name = "sqlalchemy", specifier = ">=2.0.43" },
     { name = "tool", specifier = ">=0.8.0" },
     { name = "uv", specifier = ">=0.8.19" },
@@ -419,6 +432,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/23/e8/21db9c9987b0e728855bd57bff6984f67952bea55d6f75e055c46b5383e8/platformdirs-4.4.0.tar.gz", hash = "sha256:ca753cf4d81dc309bc67b0ea38fd15dc97bc30ce419a7f58d13eb3bf14c4febf", size = 21634, upload-time = "2025-08-26T14:32:04.268Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/40/4b/2028861e724d3bd36227adfa20d3fd24c3fc6d52032f4a93c133be5d17ce/platformdirs-4.4.0-py3-none-any.whl", hash = "sha256:abd01743f24e5287cd7a5db3752faf1a2d65353f38ec26d98e25a6db65958c85", size = 18654, upload-time = "2025-08-26T14:32:02.735Z" },
+]
+
+[[package]]
+name = "pluggy"
+version = "1.6.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/f9/e2/3e91f31a7d2b083fe6ef3fa267035b518369d9511ffab804f839851d2779/pluggy-1.6.0.tar.gz", hash = "sha256:7dcc130b76258d33b90f61b658791dede3486c3e6bfb003ee5c9bfb396dd22f3", size = 69412, upload-time = "2025-05-15T12:30:07.975Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/54/20/4d324d65cc6d9205fabedc306948156824eb9f0ee1633355a8f7ec5c66bf/pluggy-1.6.0-py3-none-any.whl", hash = "sha256:e920276dd6813095e9377c0bc5566d94c932c33b27a3e3945d8389c374dd4746", size = 20538, upload-time = "2025-05-15T12:30:06.134Z" },
 ]
 
 [[package]]
@@ -499,6 +521,38 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/b0/77/a5b8c569bf593b0140bde72ea885a803b82086995367bf2037de0159d924/pygments-2.19.2.tar.gz", hash = "sha256:636cb2477cec7f8952536970bc533bc43743542f70392ae026374600add5b887", size = 4968631, upload-time = "2025-06-21T13:39:12.283Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/c7/21/705964c7812476f378728bdf590ca4b771ec72385c533964653c68e86bdc/pygments-2.19.2-py3-none-any.whl", hash = "sha256:86540386c03d588bb81d44bc3928634ff26449851e99741617ecb9037ee5ec0b", size = 1225217, upload-time = "2025-06-21T13:39:07.939Z" },
+]
+
+[[package]]
+name = "pyrefly"
+version = "0.34.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/cb/db/b9bdb8c2f538cfa3338d368927b98cd573131804e6d57857ea9c7d0dbc56/pyrefly-0.34.0.tar.gz", hash = "sha256:eb18f4ec341105d5463b5c5844b25a2d520d36d5294302fcb3fd1de2868246e1", size = 1461134, upload-time = "2025-09-22T17:46:56.579Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/7d/8c/decdf3c66207f21f71ca0a2919650499aa2afcb3f22e0f2fbffb002e3754/pyrefly-0.34.0-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:c5b212f557c19bbc9f02377d25c0380ea9987e320a1ed69f625fe817a1163774", size = 6722736, upload-time = "2025-09-22T17:46:41.432Z" },
+    { url = "https://files.pythonhosted.org/packages/4a/80/4262da89aef2b14fde6bf0346fe63dc710742e2854b26a929f78160d594a/pyrefly-0.34.0-py3-none-macosx_11_0_arm64.whl", hash = "sha256:87181abe763ed19fd9e107a9ae5982f852f18f93de2957a731c9b40048174552", size = 6267483, upload-time = "2025-09-22T17:46:43.533Z" },
+    { url = "https://files.pythonhosted.org/packages/53/64/36db94740c2a413a1255540da6103d82bd2c451d526a1c405d341a75a50f/pyrefly-0.34.0-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:1085c186cde52c79f42b8c654aa0840c1028601fbd9c35d981d60453008498ec", size = 6505495, upload-time = "2025-09-22T17:46:45.041Z" },
+    { url = "https://files.pythonhosted.org/packages/c3/2b/6606fcb784770cd36c5cafc5c940c796753772d5c64be82bed1bf5cce9aa/pyrefly-0.34.0-py3-none-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:dcb92520e4dac3967744f44bd3145e8d029d313076b06277f15b693869f4eb4a", size = 7334795, upload-time = "2025-09-22T17:46:47.472Z" },
+    { url = "https://files.pythonhosted.org/packages/69/b3/4353e744e29fa95c0e9f70ababe15fd019df252f8e90ecd2d15620adcfc8/pyrefly-0.34.0-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:1f840afa73371aa56f8e6666f2733b4b8a85620329aa385d7a39bb226983b43b", size = 6999090, upload-time = "2025-09-22T17:46:49.376Z" },
+    { url = "https://files.pythonhosted.org/packages/60/1e/7d13a42f680c98ed0365295d3bb09d7e11c97aab563154dcfa62a7448a25/pyrefly-0.34.0-py3-none-win32.whl", hash = "sha256:a22f1fd6f03c6fe11c6b491c12a70bb07b3025cd316faa9f98729d42e410bbcd", size = 6500766, upload-time = "2025-09-22T17:46:51.194Z" },
+    { url = "https://files.pythonhosted.org/packages/7b/16/e2285197587d125473237f9daf3878edeab9d03918985db89f294bdebc86/pyrefly-0.34.0-py3-none-win_amd64.whl", hash = "sha256:ac6e33b6a2f90aea9bdf54c7f78ff29b9f71ffcf55f2636b7da513df74bd4b56", size = 6938350, upload-time = "2025-09-22T17:46:53.08Z" },
+    { url = "https://files.pythonhosted.org/packages/cc/34/0653bf969bd3f0dbb86083ff73f0a381e46239aac21b7d6dfec403959832/pyrefly-0.34.0-py3-none-win_arm64.whl", hash = "sha256:34517123a61caef9d19a73ebb04b5bb8bde6efe999daf89fd7a200bb755e3e73", size = 6527162, upload-time = "2025-09-22T17:46:54.954Z" },
+]
+
+[[package]]
+name = "pytest"
+version = "8.4.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "colorama", marker = "sys_platform == 'win32'" },
+    { name = "iniconfig" },
+    { name = "packaging" },
+    { name = "pluggy" },
+    { name = "pygments" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/a3/5c/00a0e072241553e1a7496d638deababa67c5058571567b92a7eaa258397c/pytest-8.4.2.tar.gz", hash = "sha256:86c0d0b93306b961d58d62a4db4879f27fe25513d4b969df351abdddb3c30e01", size = 1519618, upload-time = "2025-09-04T14:34:22.711Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a8/a4/20da314d277121d6534b3a980b29035dcd51e6744bd79075a6ce8fa4eb8d/pytest-8.4.2-py3-none-any.whl", hash = "sha256:872f880de3fc3a5bdc88a11b39c9710c3497a547cfa9320bc3c5e62fbf272e79", size = 365750, upload-time = "2025-09-04T14:34:20.226Z" },
 ]
 
 [[package]]

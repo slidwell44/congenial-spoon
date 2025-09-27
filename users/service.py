@@ -1,7 +1,6 @@
 from uuid import UUID
 
-from asyncpg import Connection  # type: ignore
-from black.rusty import Result
+from asyncpg import Connection
 from fastapi import status
 from fastapi.exceptions import HTTPException
 

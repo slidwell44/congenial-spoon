@@ -147,7 +147,7 @@ async def update_user(
 async def delete_user(
     service: t.Annotated[UserService, Depends(get_user_service)],
     conn: t.Annotated[Connection, Depends(get_database_transaction)],
-    uid: str = Path(..., title="User id to delete"),
+    uid: UUID = Path(..., title="User id to delete"),
 ) -> None:
     """
     Delete a user by uid
