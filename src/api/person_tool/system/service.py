@@ -1,6 +1,6 @@
 from asyncpg import Connection
 
-from system.repository import SystemRepository
+from person_tool.system.repository import SystemRepository
 
 
 class SystemService:

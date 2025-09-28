@@ -1,14 +1,14 @@
 import typing as t
 from contextlib import asynccontextmanager
 
-from asyncpg import Pool, create_pool, Connection
+from asyncpg import Pool, create_pool, Connection  # type: ignore
 
-from config import settings
+from person_tool.config import settings
 
 
 class PeopleManagementDatabase:
     def __init__(self):
-        self._pool: t.Optional[Pool] = None
+        self._pool: Pool | None = None
 
     @property
     def pool(self) -> Pool:
@@ -18,7 +18,7 @@ class PeopleManagementDatabase:
 
     async def startup(self):
         # noinspection PyUnusedLocal
-        async def _init(init_con: Connection):
+        async def _init(init_con: Connection) -> None:
             await init_con.execute("SET TIME ZONE 'UTC'")
 
         self._pool = await create_pool(
@@ -30,6 +30,7 @@ class PeopleManagementDatabase:
             min_size=settings.database.min_pool_size,
             max_size=settings.database.max_pool_size,
             command_timeout=settings.database.command_timeout,
+            init=_init,
         )
         async with self.connection() as con:
             await con.fetchval("SELECT 1")
@@ -41,13 +42,27 @@ class PeopleManagementDatabase:
 
     @asynccontextmanager
     async def connection(self) -> t.AsyncIterator[Connection]:
-        con = await self._pool.acquire()
+        con = await self.pool.acquire()
         try:
             yield con
         finally:
-            await self._pool.release(con)
+            await self.pool.release(con)
+
+    @asynccontextmanager
+    async def transaction(self) -> t.AsyncIterator[Connection]:
+        con = await self.pool.acquire()
+        tr = con.transaction()
+        await tr.start()
+        try:
+            yield con
+            await tr.commit()
+        except Exception:
+            await tr.rollback()
+            raise
+        finally:
+            await self.pool.release(con)
 
 
-service = PeopleManagementDatabase()
+people_management_db = PeopleManagementDatabase()
 
-__all__ = ["service"]
+__all__ = ["people_management_db"]
