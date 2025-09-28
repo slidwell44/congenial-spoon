@@ -1,5 +1,4 @@
 import typing as t
-from os.path import defpath
 
 from asyncpg import Connection
 from fastapi import Depends
