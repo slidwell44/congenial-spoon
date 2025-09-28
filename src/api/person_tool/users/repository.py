@@ -3,7 +3,6 @@ from uuid import UUID
 
 from asyncpg import Connection  # type: ignore
 from asyncpg.protocol.protocol import Record  # type: ignore
-from black.rusty import Result
 
 from person_tool.users.models import UserResponse, CreateUserRequest, UpdateUserRequest
 
