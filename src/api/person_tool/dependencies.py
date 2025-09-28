@@ -5,6 +5,8 @@ from asyncpg import Connection
 from fastapi import Depends
 
 from person_tool.db.core import people_management_db
+from person_tool.jobs.repository import JobRepository
+from person_tool.jobs.service import JobService
 from person_tool.system.repository import SystemRepository
 from person_tool.system.service import SystemService
 from person_tool.users.repository import UserRepository
@@ -48,3 +50,16 @@ def get_user_service(
     repository: UserRepository = Depends(get_user_repository),
 ) -> UserService:
     return UserService(repository)
+
+
+# ---------------------- job dependencies ----------------------
+
+
+def get_job_repository() -> JobRepository:
+    return JobRepository()
+
+
+def get_job_service(
+    repository: JobRepository = Depends(get_job_repository),
+) -> JobService:
+    return JobService(repository)

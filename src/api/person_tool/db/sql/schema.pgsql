@@ -1,6 +1,3 @@
-CREATE DATABASE "PeopleDb";
-\c "PeopleDb";
-
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 CREATE SCHEMA IF NOT EXISTS meta;
