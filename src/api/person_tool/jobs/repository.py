@@ -3,18 +3,16 @@ from uuid import UUID
 
 from asyncpg import Connection  # type: ignore
 from asyncpg.protocol.protocol import Record  # type: ignore
-from black.rusty import Result
 
-from person_tool.jobs.models import JobResponse, CreateJobRequest, UpdateJobRequest
+from person_tool.jobs.models import CreateJobRequest, JobResponse, UpdateJobRequest
 
 
 class JobRepository:
-    def __init__(self):
-        pass
+    def __init__(self, conn: Connection) -> None:
+        self.conn: Connection = conn
 
-    @staticmethod
     async def get_jobs(
-        conn: Connection,
+        self,
         *,
         job_id: str | None,
         title: str | None,
@@ -22,7 +20,7 @@ class JobRepository:
         limit: int = 10,
         offset: int = 0,
     ) -> list[JobResponse] | None:
-        result: list[Record] = await conn.fetch(
+        result: list[Record] = await self.conn.fetch(
             """
             SELECT uid, id, title, description, status, created_at
             FROM people.jobs
@@ -42,9 +40,8 @@ class JobRepository:
             return None
         return [JobResponse.model_validate(dict(r)) for r in result]
 
-    @staticmethod
-    async def get_job_by_id(conn: Connection, uid: UUID) -> JobResponse | None:
-        result: Record | None = await conn.fetchrow(
+    async def get_job_by_id(self, uid: UUID) -> JobResponse | None:
+        result: Record | None = await self.conn.fetchrow(
             """
             SELECT uid, id, title, description, status, created_at
             FROM people.jobs WHERE uid = $1
@@ -53,13 +50,12 @@ class JobRepository:
         )
         return JobResponse.model_validate(dict(result)) if result else None
 
-    @staticmethod
     async def create_jobs(
-        conn: Connection,
+        self,
         data: list[CreateJobRequest],
     ) -> list[JobResponse]:
         payload: str = json.dumps([d.model_dump() for d in data])
-        result: list[Record] = await conn.fetch(
+        result: list[Record] = await self.conn.fetch(
             """
                 WITH payload AS (
                     SELECT * FROM jsonb_to_recordset($1::jsonb)
@@ -74,11 +70,8 @@ class JobRepository:
         )
         return [JobResponse.model_validate(dict(r)) for r in result]
 
-    @staticmethod
-    async def update_job(
-        conn: Connection, data: UpdateJobRequest
-    ) -> JobResponse | None:
-        row: Record | None = await conn.fetchrow(
+    async def update_job(self, data: UpdateJobRequest) -> JobResponse | None:
+        row: Record | None = await self.conn.fetchrow(
             """
             UPDATE people.jobs
             SET
@@ -97,9 +90,8 @@ class JobRepository:
         )
         return JobResponse.model_validate(dict(row)) if row else None
 
-    @staticmethod
-    async def delete_job(conn: Connection, uid: UUID) -> str:
-        result = await conn.execute(
+    async def delete_job(self, uid: UUID) -> str:
+        result = await self.conn.execute(
             """
             DELETE FROM people.jobs WHERE uid = $1
             """,

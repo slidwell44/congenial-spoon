@@ -3,18 +3,16 @@ from uuid import UUID
 
 from asyncpg import Connection  # type: ignore
 from asyncpg.protocol.protocol import Record  # type: ignore
-from black.rusty import Result
 
-from person_tool.users.models import UserResponse, CreateUserRequest, UpdateUserRequest
+from person_tool.users.models import CreateUserRequest, UpdateUserRequest, UserResponse
 
 
 class UserRepository:
-    def __init__(self):
-        pass
+    def __init__(self, conn: Connection) -> None:
+        self.conn: Connection = conn
 
-    @staticmethod
     async def get_users(
-        conn: Connection,
+        self,
         *,
         user_id: str | None,
         first_name: str | None,
@@ -22,7 +20,7 @@ class UserRepository:
         limit: int = 10,
         offset: int = 0,
     ) -> list[UserResponse] | None:
-        result: list[Record] = await conn.fetch(
+        result: list[Record] = await self.conn.fetch(
             """
             SELECT uid, id, first_name, last_name, email, created_at
             FROM people.users
@@ -42,9 +40,8 @@ class UserRepository:
             return None
         return [UserResponse.model_validate(dict(r)) for r in result]
 
-    @staticmethod
-    async def get_user_by_id(conn: Connection, uid: UUID) -> UserResponse | None:
-        result: Record = await conn.fetchrow(
+    async def get_user_by_id(self, uid: UUID) -> UserResponse | None:
+        result: Record | None = await self.conn.fetchrow(
             """
             SELECT uid, id, first_name, last_name, email, created_at
             FROM people.users WHERE uid = $1
@@ -53,13 +50,12 @@ class UserRepository:
         )
         return UserResponse.model_validate(dict(result)) if result else None
 
-    @staticmethod
     async def create_users(
-        conn: Connection,
+        self,
         data: list[CreateUserRequest],
     ) -> list[UserResponse]:
         payload: str = json.dumps([d.model_dump() for d in data])
-        result: list[Record] = await conn.fetch(
+        result: list[Record] = await self.conn.fetch(
             """
                 WITH payload AS (
                     SELECT * FROM jsonb_to_recordset($1::jsonb)
@@ -74,11 +70,8 @@ class UserRepository:
         )
         return [UserResponse.model_validate(dict(r)) for r in result]
 
-    @staticmethod
-    async def update_user(
-        conn: Connection, data: UpdateUserRequest
-    ) -> UserResponse | None:
-        row: Record | None = await conn.fetchrow(
+    async def update_user(self, data: UpdateUserRequest) -> UserResponse | None:
+        row: Record | None = await self.conn.fetchrow(
             """
             UPDATE people.users
             SET
@@ -97,9 +90,8 @@ class UserRepository:
         )
         return UserResponse.model_validate(dict(row)) if row else None
 
-    @staticmethod
-    async def delete_user(conn: Connection, uid: UUID) -> str:
-        result = await conn.execute(
+    async def delete_user(self, uid: UUID) -> str:
+        result = await self.conn.execute(
             """
             DELETE FROM people.users WHERE uid = $1
             """,

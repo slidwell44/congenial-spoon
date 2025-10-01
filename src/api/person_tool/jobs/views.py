@@ -1,17 +1,12 @@
 import typing as t
 from uuid import UUID
 
-from asyncpg import Connection  # type: ignore
-from fastapi import APIRouter, Depends, Body, status, Path, Query
+from fastapi import APIRouter, Body, Depends, Path, Query, status
 from fastapi.exceptions import HTTPException
 
-from person_tool.dependencies import (
-    get_database_connection,
-    get_job_service,
-    get_database_transaction,
-)
+from person_tool.dependencies import provide_job_application
+from person_tool.jobs.application import JobApplication
 from person_tool.jobs.models import CreateJobRequest, JobResponse, UpdateJobRequest
-from person_tool.jobs.service import JobService
 
 router = APIRouter()
 
@@ -29,15 +24,14 @@ router = APIRouter()
     },
 )
 async def get_jobs(
-    service: t.Annotated[JobService, Depends(get_job_service)],
-    conn: t.Annotated[Connection, Depends(get_database_connection)],
-    job_id: t.Optional[str] = Query(
+    application: t.Annotated[JobApplication, Depends(provide_job_application)],
+    job_id: str | None = Query(
         default=None, alias="jobId", examples=["eng-001", "eng", "001"]
     ),
-    title: t.Optional[str] = Query(
+    title: str | None = Query(
         default=None, examples=["engineer", "software", "developer"]
     ),
-    job_status: t.Optional[str] = Query(
+    job_status: str | None = Query(
         default=None, alias="status", examples=["active", "inactive", "pending"]
     ),
     limit: int = 10,
@@ -46,8 +40,7 @@ async def get_jobs(
     """
     Get jobs by query params
     """
-    return await service.get_jobs(
-        conn=conn,
+    return await application.get_jobs(
         job_id=job_id,
         title=title,
         job_status=job_status,
@@ -69,14 +62,13 @@ async def get_jobs(
     },
 )
 async def get_job_by_id(
-    service: t.Annotated[JobService, Depends(get_job_service)],
-    conn: t.Annotated[Connection, Depends(get_database_connection)],
+    application: t.Annotated[JobApplication, Depends(provide_job_application)],
     uid: UUID = Path(..., title="Job id to retrieve"),
 ) -> JobResponse:
     """
     Retrieve a job by id
     """
-    return await service.get_job_by_id(conn=conn, uid=uid)
+    return await application.get_job_by_id(uid=uid)
 
 
 @router.post(
@@ -95,8 +87,7 @@ async def get_job_by_id(
     },
 )
 async def create_jobs(
-    service: t.Annotated[JobService, Depends(get_job_service)],
-    conn: t.Annotated[Connection, Depends(get_database_transaction)],
+    application: t.Annotated[JobApplication, Depends(provide_job_application)],
     data: list[CreateJobRequest] = Body(..., title="List of jobs to create"),
 ) -> list[JobResponse]:
     """
@@ -107,7 +98,7 @@ async def create_jobs(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Cannot create more than 50 jobs at once",
         )
-    return await service.create_jobs(conn=conn, data=data)
+    return await application.create_jobs(data=data)
 
 
 @router.patch(
@@ -122,14 +113,13 @@ async def create_jobs(
     },
 )
 async def update_job(
-    service: t.Annotated[JobService, Depends(get_job_service)],
-    conn: t.Annotated[Connection, Depends(get_database_transaction)],
+    application: t.Annotated[JobApplication, Depends(provide_job_application)],
     data: UpdateJobRequest = Body(...),
 ) -> JobResponse:
     """
     Update a job
     """
-    job: JobResponse = await service.update_job(conn=conn, data=data)
+    job: JobResponse = await application.update_job(data=data)
     return job
 
 
@@ -145,11 +135,10 @@ async def update_job(
     },
 )
 async def delete_job(
-    service: t.Annotated[JobService, Depends(get_job_service)],
-    conn: t.Annotated[Connection, Depends(get_database_transaction)],
+    application: t.Annotated[JobApplication, Depends(provide_job_application)],
     uid: UUID = Path(..., title="Job id to delete"),
 ) -> None:
     """
     Delete a job by uid
     """
-    await service.delete_job(conn=conn, uid=uid)
+    await application.delete_job(uid=uid)

@@ -1,8 +1,8 @@
-import pytest
-from httpx import AsyncClient
 from typing import AsyncGenerator
-from fastapi.testclient import TestClient
 
+import pytest
+from fastapi.testclient import TestClient
+from httpx import AsyncClient
 from main import app
 
 

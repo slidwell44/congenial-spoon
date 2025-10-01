@@ -1,20 +1,18 @@
 import typing as t
 
-from asyncpg import Connection
 from fastapi import APIRouter, Depends
 
-from person_tool.dependencies import get_system_service, get_database_connection
-from person_tool.system.service import SystemService
+from person_tool.dependencies import provide_system_application
+from person_tool.system.application import SystemApplication
 
 router = APIRouter()
 
 
 @router.get("/ready")
 async def check_system_readiness(
-    service: t.Annotated[SystemService, Depends(get_system_service)],
-    conn: t.Annotated[Connection, Depends(get_database_connection)],
+    application: t.Annotated[SystemApplication, Depends(provide_system_application)],
 ):
     """
     Check the readiness of the system
     """
-    return await service.check_system_readiness(conn=conn)
+    return await application.check_system_readiness()

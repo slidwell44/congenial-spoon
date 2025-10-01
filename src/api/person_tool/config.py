@@ -43,8 +43,8 @@ class ApplicationSettings(BaseSettings):
 
 
 class Settings(BaseSettings):
-    app: ApplicationSettings = Field(default_factory=lambda: ApplicationSettings()) # type: ignore
-    database: DatabaseSettings = Field(default_factory=lambda: DatabaseSettings()) # type: ignore
+    app: ApplicationSettings = Field(default_factory=lambda: ApplicationSettings())  # type: ignore
+    database: DatabaseSettings = Field(default_factory=lambda: DatabaseSettings())  # type: ignore
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

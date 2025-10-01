@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import typing as t
 from datetime import datetime
 from uuid import UUID
 
@@ -11,7 +10,9 @@ from pydantic.alias_generators import to_camel
 class JobBase(BaseModel):
     id: str = Field(min_length=3, max_length=64, examples=["eng-001"])
     title: str = Field(min_length=1, max_length=200, examples=["Software Engineer"])
-    description: str = Field(min_length=1, examples=["Develop and maintain software applications."])
+    description: str = Field(
+        min_length=1, examples=["Develop and maintain software applications."]
+    )
     status: str = Field(min_length=1, max_length=50, examples=["active"])
 
     model_config = ConfigDict(

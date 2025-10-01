@@ -1,6 +1,5 @@
 from uuid import UUID
 
-from asyncpg import Connection
 from fastapi import status
 from fastapi.exceptions import HTTPException
 
@@ -10,11 +9,10 @@ from person_tool.jobs.repository import JobRepository
 
 class JobService:
     def __init__(self, repository: JobRepository):
-        self.repository = repository
+        self.repository: JobRepository = repository
 
     async def get_jobs(
         self,
-        conn: Connection,
         *,
         job_id: str | None,
         title: str | None,
@@ -23,7 +21,6 @@ class JobService:
         offset: int = 0,
     ) -> list[JobResponse]:
         jobs: list[JobResponse] | None = await self.repository.get_jobs(
-            conn=conn,
             job_id=job_id,
             title=title,
             status=job_status,
@@ -37,10 +34,8 @@ class JobService:
             )
         return jobs
 
-    async def get_job_by_id(self, conn: Connection, uid: UUID) -> JobResponse:
-        job: JobResponse | None = await self.repository.get_job_by_id(
-            conn=conn, uid=uid
-        )
+    async def get_job_by_id(self, uid: UUID) -> JobResponse:
+        job: JobResponse | None = await self.repository.get_job_by_id(uid=uid)
         if not job:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -48,20 +43,12 @@ class JobService:
             )
         return job
 
-    async def create_jobs(
-        self, conn: Connection, data: list[CreateJobRequest]
-    ) -> list[JobResponse]:
-        response: list[JobResponse] = await self.repository.create_jobs(
-            conn=conn, data=data
-        )
+    async def create_jobs(self, data: list[CreateJobRequest]) -> list[JobResponse]:
+        response: list[JobResponse] = await self.repository.create_jobs(data=data)
         return response
 
-    async def update_job(
-        self, conn: Connection, data: UpdateJobRequest
-    ) -> JobResponse:
-        job: JobResponse | None = await self.repository.update_job(
-            conn=conn, data=data
-        )
+    async def update_job(self, data: UpdateJobRequest) -> JobResponse:
+        job: JobResponse | None = await self.repository.update_job(data=data)
         if not job:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -69,8 +56,8 @@ class JobService:
             )
         return job
 
-    async def delete_job(self, conn: Connection, uid: UUID) -> None:
-        result: str = await self.repository.delete_job(conn=conn, uid=uid)
+    async def delete_job(self, uid: UUID) -> None:
+        result: str = await self.repository.delete_job(uid=uid)
         if result != "DELETE 1":
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,

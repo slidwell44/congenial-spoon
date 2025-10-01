@@ -1,7 +1,7 @@
 import typing as t
 from contextlib import asynccontextmanager
 
-from asyncpg import Pool, create_pool, Connection  # type: ignore
+from asyncpg import Connection, Pool, create_pool  # type: ignore
 
 from person_tool.config import settings
 

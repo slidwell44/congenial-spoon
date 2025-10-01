@@ -1,17 +1,12 @@
 import typing as t
 from uuid import UUID
 
-from asyncpg import Connection  # type: ignore
-from fastapi import APIRouter, Depends, Body, status, Path, Query
+from fastapi import APIRouter, Body, Depends, Path, Query, status
 from fastapi.exceptions import HTTPException
 
-from person_tool.dependencies import (
-    get_database_connection,
-    get_user_service,
-    get_database_transaction,
-)
-from person_tool.users.models import CreateUserRequest, UserResponse, UpdateUserRequest
-from person_tool.users.service import UserService
+from person_tool.dependencies import provide_user_application
+from person_tool.users.application import UserApplication
+from person_tool.users.models import CreateUserRequest, UpdateUserRequest, UserResponse
 
 router = APIRouter()
 
@@ -29,8 +24,7 @@ router = APIRouter()
     },
 )
 async def get_users(
-    service: t.Annotated[UserService, Depends(get_user_service)],
-    conn: t.Annotated[Connection, Depends(get_database_connection)],
+    application: t.Annotated[UserApplication, Depends(provide_user_application)],
     user_id: t.Optional[str] = Query(
         default=None, alias="userId", examples=["sl3789", "sl", "789"]
     ),
@@ -46,14 +40,14 @@ async def get_users(
     """
     Get users by query params
     """
-    return await service.get_users(
-        conn=conn,
+    response: list[UserResponse] = await application.get_users(
         user_id=user_id,
         first_name=first_name,
         last_name=last_name,
         limit=limit,
         offset=offset,
     )
+    return response
 
 
 @router.get(
@@ -69,14 +63,31 @@ async def get_users(
     },
 )
 async def get_user_by_id(
-    service: t.Annotated[UserService, Depends(get_user_service)],
-    conn: t.Annotated[Connection, Depends(get_database_connection)],
+    application: t.Annotated[UserApplication, Depends(provide_user_application)],
     uid: UUID = Path(..., title="User id to retrieve"),
 ) -> UserResponse:
     """
     Retrieve a user by id
     """
-    return await service.get_user_by_id(conn=conn, uid=uid)
+    response: UserResponse = await application.get_user_by_id(uid=uid)
+    return response
+
+
+@router.get(
+    path="/{uid}/jobs",
+    status_code=status.HTTP_200_OK,
+    summary="Get a user with their jobs",
+    responses={
+        status.HTTP_200_OK: {
+            "description": "Gets a user with all jobs attached to them"
+        },
+        status.HTTP_404_NOT_FOUND: {"description": "User not found"},
+    },
+)
+async def get_user_with_jobs_by_uid(
+    application: t.Annotated[UserApplication, Depends(provide_user_application)],
+):
+    return NotImplementedError()
 
 
 @router.post(
@@ -95,8 +106,7 @@ async def get_user_by_id(
     },
 )
 async def create_users(
-    service: t.Annotated[UserService, Depends(get_user_service)],
-    conn: t.Annotated[Connection, Depends(get_database_transaction)],
+    application: t.Annotated[UserApplication, Depends(provide_user_application)],
     data: list[CreateUserRequest] = Body(..., title="List of users to create"),
 ) -> list[UserResponse]:
     """
@@ -107,7 +117,7 @@ async def create_users(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Cannot create more than 50 users at once",
         )
-    return await service.create_users(conn=conn, data=data)
+    return await application.create_users(data=data)
 
 
 @router.patch(
@@ -122,14 +132,13 @@ async def create_users(
     },
 )
 async def update_user(
-    service: t.Annotated[UserService, Depends(get_user_service)],
-    conn: t.Annotated[Connection, Depends(get_database_transaction)],
+    application: t.Annotated[UserApplication, Depends(provide_user_application)],
     data: UpdateUserRequest = Body(...),
 ) -> UserResponse:
     """
     Update a user
     """
-    user: UserResponse = await service.update_user(conn=conn, data=data)
+    user: UserResponse = await application.update_user(data=data)
     return user
 
 
@@ -145,11 +154,10 @@ async def update_user(
     },
 )
 async def delete_user(
-    service: t.Annotated[UserService, Depends(get_user_service)],
-    conn: t.Annotated[Connection, Depends(get_database_transaction)],
+    application: t.Annotated[UserApplication, Depends(provide_user_application)],
     uid: UUID = Path(..., title="User id to delete"),
 ) -> None:
     """
     Delete a user by uid
     """
-    await service.delete_user(conn=conn, uid=uid)
+    await application.delete_user(uid=uid)

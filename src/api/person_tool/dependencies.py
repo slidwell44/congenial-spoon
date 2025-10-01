@@ -1,65 +1,23 @@
-import typing as t
-from os.path import defpath
-
-from asyncpg import Connection
-from fastapi import Depends
-
-from person_tool.db.core import people_management_db
-from person_tool.jobs.repository import JobRepository
-from person_tool.jobs.service import JobService
-from person_tool.system.repository import SystemRepository
-from person_tool.system.service import SystemService
-from person_tool.users.repository import UserRepository
-from person_tool.users.service import UserService
-
-
-# ---------------------- database dependencies ----------------------
-
-
-async def get_database_connection() -> t.AsyncIterator[Connection]:
-    async with people_management_db.connection() as conn:
-        yield conn
-
-
-async def get_database_transaction() -> t.AsyncIterator[Connection]:
-    async with people_management_db.transaction() as conn:
-        yield conn
-
+from person_tool.jobs.application import JobApplication
+from person_tool.system.application import SystemApplication
+from person_tool.users.application import UserApplication
 
 # ---------------------- system dependencies ----------------------
 
 
-def get_system_repository() -> SystemRepository:
-    return SystemRepository()
-
-
-def get_system_service(
-    repository: SystemRepository = Depends(get_system_repository),
-) -> SystemService:
-    return SystemService(repository)
+def provide_system_application() -> SystemApplication:
+    return SystemApplication()
 
 
 # ---------------------- user dependencies ----------------------
 
 
-def get_user_repository() -> UserRepository:
-    return UserRepository()
-
-
-def get_user_service(
-    repository: UserRepository = Depends(get_user_repository),
-) -> UserService:
-    return UserService(repository)
+def provide_user_application() -> UserApplication:
+    return UserApplication()
 
 
 # ---------------------- job dependencies ----------------------
 
 
-def get_job_repository() -> JobRepository:
-    return JobRepository()
-
-
-def get_job_service(
-    repository: JobRepository = Depends(get_job_repository),
-) -> JobService:
-    return JobService(repository)
+def provide_job_application() -> JobApplication:
+    return JobApplication()

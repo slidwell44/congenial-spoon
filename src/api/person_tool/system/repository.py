@@ -2,10 +2,9 @@ from asyncpg import Connection
 
 
 class SystemRepository:
-    def __init__(self):
-        pass
+    def __init__(self, conn: Connection) -> None:
+        self.conn: Connection = conn
 
-    @staticmethod
-    async def check_system_readiness(conn: Connection) -> bool:
-        result = await conn.execute("SELECT 1")
+    async def check_system_readiness(self) -> bool:
+        result = await self.conn.execute("SELECT 1")
         return bool(result)
