@@ -1,13 +1,17 @@
 import uvicorn
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, RedirectResponse
 
 from person_tool.config import configure_logging, settings
+from person_tool.coverage.views import router as coverage_router
+from person_tool.employees.views import router as employee_router
 from person_tool.jobs.views import router as job_router
 from person_tool.lifespan import lifespan
 from person_tool.middlewares.measure_response_time import add_process_time_header
+from person_tool.one_on_ones.views import router as one_on_one_router
+from person_tool.skills.views import router as skill_router
 from person_tool.system.views import router as system_router
-from person_tool.users.views import router as user_router
 
 configure_logging()
 
@@ -20,6 +24,14 @@ app: FastAPI = FastAPI(
     redoc_url=None,
 )
 
+# Configure CORS to allow frontend requests
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.middleware("http")(add_process_time_header)
 
@@ -37,9 +49,28 @@ async def favicon():
 
 
 app.include_router(
-    user_router, prefix=f"{settings.app.base_api_url}/users", tags=["Users"]
+    employee_router,
+    prefix=f"{settings.app.base_api_url}/employees",
+    tags=["Employees"],
 )
 
+app.include_router(
+    skill_router,
+    prefix=f"{settings.app.base_api_url}/skills",
+    tags=["Skills"],
+)
+
+app.include_router(
+    one_on_one_router,
+    prefix=f"{settings.app.base_api_url}/one-on-ones",
+    tags=["One-on-Ones"],
+)
+
+app.include_router(
+    coverage_router,
+    prefix=f"{settings.app.base_api_url}/coverage",
+    tags=["Coverage"],
+)
 app.include_router(
     job_router, prefix=f"{settings.app.base_api_url}/jobs", tags=["Jobs"]
 )
