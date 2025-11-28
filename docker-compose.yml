@@ -1,0 +1,87 @@
+services:
+  db:
+    image: postgres:17-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-PeopleDb}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - app-db-data:/var/lib/postgresql/data/pgdata
+      - ./src/api/person_tool/db/sql:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-PeopleDb}"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+
+  backend:
+    build:
+      context: ./src/api
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      APP_VERSION: ${APP_VERSION:-0.1.0}
+      APP_NAME: ${APP_NAME:-person-tool}
+      APP_PORT: ${APP_PORT:-8000}
+      APP_HOST: ${APP_HOST:-0.0.0.0}
+      APP_RELOAD: ${APP_RELOAD:-false}
+      APP_LOG_LEVEL: ${APP_LOG_LEVEL:-INFO}
+      APP_BASE_API_URL: ${APP_BASE_API_URL:-/api/v1}
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-PeopleDb}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_MIN_POOL_SIZE: ${POSTGRES_MIN_POOL_SIZE:-1}
+      POSTGRES_MAX_POOL_SIZE: ${POSTGRES_MAX_POOL_SIZE:-10}
+    ports:
+      - "${APP_PORT:-8000}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      seed:
+        condition: service_completed_successfully
+    volumes:
+      - ./src/api:/app
+    command: uvicorn person_tool.main:app --host 0.0.0.0 --port 8000
+
+  seed:
+    build:
+      context: ./src/api
+      dockerfile: Dockerfile
+    restart: "no"
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-PeopleDb}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_MIN_POOL_SIZE: 1
+      POSTGRES_MAX_POOL_SIZE: 1
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./src/api:/app
+    command: uv run python -m person_tool.db.seed_data
+
+  frontend:
+    build:
+      context: ./src/ui/person-tool
+      dockerfile: Dockerfile
+      args:
+        REACT_APP_API_BASE: ${REACT_APP_API_BASE:-http://localhost:8000/api/v1}
+    restart: always
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    depends_on:
+      - backend
+
+volumes:
+  app-db-data:
+
