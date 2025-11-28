@@ -2,13 +2,18 @@ FROM python:3.13-slim
 
 WORKDIR /app
 
-# Install uv
-RUN pip install --no-cache-dir uv
+# Install system dependencies and uv
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip install --no-cache-dir uv
 
 # Copy dependency files
 COPY pyproject.toml uv.lock ./
 
 # Install dependencies
+# Using --frozen for reproducible builds
+# If network issues occur, the build will fail clearly and can be retried
 RUN uv sync --frozen
 
 # Copy application code
