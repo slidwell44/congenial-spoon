@@ -74,16 +74,13 @@ services:
     build:
       context: ./src/ui/person-tool
       dockerfile: Dockerfile
+      args:
+        REACT_APP_API_BASE: ${REACT_APP_API_BASE:-http://localhost:8000/api/v1}
     restart: always
-    environment:
-      REACT_APP_API_BASE: ${REACT_APP_API_BASE:-http://localhost:8000/api/v1}
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
     depends_on:
       - backend
-    volumes:
-      - ./src/ui/person-tool:/app
-      - /app/node_modules
 
 volumes:
   app-db-data:

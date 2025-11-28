@@ -18,6 +18,22 @@ async def seed_database(conn: Connection) -> None:
     """Seed the database with test data."""
     log.info("Starting database seeding...")
 
+    # Check if schema exists, if not, provide helpful error
+    try:
+        schema_exists = await conn.fetchval(
+            "SELECT EXISTS(SELECT 1 FROM information_schema.schemata WHERE schema_name = 'people')"
+        )
+        if not schema_exists:
+            log.error("Schema 'people' does not exist. Please run the schema initialization first.")
+            log.error("In Docker, the schema should be created automatically from SQL files.")
+            log.error("If running locally, run: psql -U postgres -d PeopleDb -f person_tool/db/sql/schema.pgsql")
+            raise RuntimeError("Database schema not initialized. Please run schema initialization first.")
+    except Exception as e:
+        if "does not exist" in str(e) or "relation" in str(e).lower():
+            log.error("Database schema appears to be missing. Please initialize the schema first.")
+            raise
+        raise
+
     # Check if data already exists
     existing_employees = await conn.fetchval("SELECT COUNT(*) FROM people.employees")
     if existing_employees > 0:
@@ -681,7 +697,7 @@ async def seed_database(conn: Connection) -> None:
             """
             INSERT INTO people.jobs (id, title, description, status)
             VALUES ($1, $2, $3, $4)
-            ON CONFLICT DO NOTHING
+            ON CONFLICT (id) DO NOTHING
             """,
             job_data["id"],
             job_data["title"],

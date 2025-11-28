@@ -185,7 +185,8 @@ CREATE TABLE people.jobs
     title        varchar(200) NOT NULL,
     description  text         NOT NULL,
     status       varchar(50)  NOT NULL,
-    created_at   timestamptz  NOT NULL DEFAULT now()
+    created_at   timestamptz  NOT NULL DEFAULT now(),
+    UNIQUE (id)
 );
 
 CREATE TABLE people.user_relationships
